@@ -126,10 +126,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                 
                 player_count = await self.get_player_count()
                 
-                if player_count < 3:
+                if player_count < 2:
                     await self.send(text_data=json.dumps({
                         'action': 'error',
-                        'message': f'Need at least 3 players to start. Currently have {player_count}.'
+                        'message': f'Need at least 2 players to start. Currently have {player_count}.'
                     }))
                     return
                 
