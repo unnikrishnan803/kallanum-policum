@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Kallanum Policum</h1>
+<p>The Ultimate Bluffing Game</p>
+
+{% if error %}
+<div style="color: #ff6b6b; margin-bottom: 10px;">{{ error }}</div>
+{% endif %}
+
+<div style="background: #2a2a2a; padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+    <h3>Create Room</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <button type="submit" class="btn">Create New Game</button>
+    </form>
+</div>
+
+<div style="background: #2a2a2a; padding: 20px; border-radius: 20px;">
+    <h3>Join Room</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="join">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="text" name="room_code" placeholder="Room Code (e.g. ABCD)" required style="text-transform: uppercase;">
+        <button type="submit" class="btn" style="background: linear-gradient(45deg, #4facfe, #00f2fe);">Join Game</button>
+    </form>
+</div>
+{% endblock %}

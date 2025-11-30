@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Player Test - Kallanum Policum</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .instructions {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-left: 4px solid #ff6b6b;
+        }
+        code {
+            background: #444;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 How to Test Kallanum Policum (Multi-Player)</h1>
+    
+    <div class="instructions">
+        <h2>Quick Test Guide</h2>
+        
+        <div class="step">
+            <h3>Step 1: Open Multiple Browser Windows</h3>
+            <p>Open <strong>3-4 browser windows</strong> (use Incognito/Private mode for separate sessions)</p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Create Room (Window 1)</h3>
+            <p>In the first window:</p>
+            <ul>
+                <li>Go to: <code>http://127.0.0.1:8000/</code></li>
+                <li>Enter name: <strong>Alice</strong></li>
+                <li>Click <strong>"Create New Game"</strong></li>
+                <li>Note the room code (e.g., <code>ABC123</code>)</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Join Room (Windows 2, 3, 4)</h3>
+            <p>In each additional window:</p>
+            <ul>
+                <li>Go to: <code>http://127.0.0.1:8000/</code></li>
+                <li>Enter names: <strong>Bob</strong>, <strong>Charlie</strong>, <strong>Diana</strong></li>
+                <li>Enter the room code from Step 2</li>
+                <li>Click <strong>"Join Game"</strong></li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Verify Player List</h3>
+            <p>In Alice's window (the host), you should see all 4 players in the lobby</p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 5: Start the Game</h3>
+            <p>In Alice's window, click <strong>"🎮 Start Game"</strong></p>
+            <p>All windows will show a folded chit card</p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 6: Reveal Roles</h3>
+            <p>In each window:</p>
+            <ul>
+                <li>Click the chit card to flip it</li>
+                <li>See your assigned role (Police, Thief, King, Minister, etc.)</li>
+                <li>Click <strong>"✅ Ready to Play"</strong></li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 7: Police Makes Arrest</h3>
+            <p>The player who got <strong>Police</strong> role will see:</p>
+            <ul>
+                <li>All player names</li>
+                <li>🚨 Arrest buttons next to each name</li>
+                <li>Click arrest on a suspect</li>
+            </ul>
+            <p>Other players will see:</p>
+            <ul>
+                <li>Only their own role and points</li>
+                <li>"Waiting for police..." message</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 8: See Results</h3>
+            <p>All windows will show:</p>
+            <ul>
+                <li>Winner (Police or Thief)</li>
+                <li>Who was the thief</li>
+                <li>Updated leaderboard with scores</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 9: Play Again</h3>
+            <p>Host clicks <strong>"▶️ Next Round"</strong> to play another round</p>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h2>✅ Features to Test</h2>
+        <ul>
+            <li>✅ Room creation with unique codes</li>
+            <li>✅ Multi-player join (real-time player list updates)</li>
+            <li>✅ Random role assignment (Police, Thief, + custom roles)</li>
+            <li>✅ Chit reveal animation</li>
+            <li>✅ Police sees ALL player names</li>
+            <li>✅ Other players see ONLY their own role</li>
+            <li>✅ Arrest mechanism</li>
+            <li>✅ Correct winner calculation</li>
+            <li>✅ Scoring system</li>
+            <li>✅ Leaderboard</li>
+        </ul>
+    </div>
+    
+    <div class="instructions" style="background: #ff6b6b; color: white;">
+        <h2>⚠️ Important Notes</h2>
+        <ul>
+            <li><strong>Minimum 2 players required</strong> for the game to work properly</li>
+            <li>Use <strong>Incognito/Private windows</strong> for separate sessions</li>
+            <li>Each player needs a <strong>unique name</strong> in the same room</li>
+            <li>The <strong>first player</strong> to create the room is the host</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="http://127.0.0.1:8000/" style="
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #f06595);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        ">🎮 Start Playing Now</a>
+    </div>
+</body>
+</html>

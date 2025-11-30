@@ -1,0 +1,594 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- LOBBY SCREEN -->
+    <div id="lobby-screen" class="fade-in">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="font-size: 3rem; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,215,0,0.5);">🕵️ Kallanum Policum</h1>
+            <div style="font-size: 1.2rem; color: #888;">Room Code: <span style="color: #ffe066; font-weight: bold;">{{ room.room_code }}</span></div>
+        </div>
+
+        <!-- Connection Status -->
+        <div id="connection-status" style="text-align: center; margin-bottom: 20px; padding: 5px; border-radius: 5px; background: #333; color: #888; font-size: 0.8rem; width: fit-content; margin: 0 auto 20px auto;">
+            Connecting...
+        </div>
+
+        {% if is_host %}
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button class="btn" onclick="startGame()">▶ Start Game</button>
+            <button class="btn" onclick="openSettings()" style="background: linear-gradient(45deg, #444, #666);">⚙️ Game Settings</button>
+        </div>
+        {% else %}
+        <div style="text-align: center; margin-bottom: 20px; color: #888; font-style: italic;">
+            Waiting for host to start...
+        </div>
+        {% endif %}
+
+        <div id="player-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 30px;">
+            <!-- Players will be added here -->
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+        <div style="background: #2a2a2a; width: 90%; max-width: 500px; margin: 50px auto; padding: 20px; border-radius: 15px; border: 1px solid #444;">
+            <h2 style="margin-bottom: 20px; color: #ffe066;">⚙️ Game Settings</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Max Rounds:</label>
+                <input type="number" id="setting-max-rounds" value="5" min="1" max="20" style="width: 100%; padding: 10px; background: #333; border: 1px solid #444; color: white; border-radius: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 10px;">Role Points:</label>
+                <div id="roles-settings-container" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Dynamic roles inputs will be here -->
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeSettings()" style="background: #444;">Cancel</button>
+                <button class="btn" onclick="saveSettings()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHIT SCREEN -->
+    <div id="chit-screen" style="display: none; text-align: center;">
+        <h2 style="margin-bottom: 30px;">Your Role is...</h2>
+        
+        <div class="card-container" onclick="revealRole()">
+            <div id="chit-card" class="card">
+                <div class="card-front">
+                    <img src="/static/images/card_back.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">
+                </div>
+                <div class="card-back" id="chit-back">
+                    <div id="role-icon-container" style="margin-bottom: 20px;"></div>
+                    <h2 id="role-name" style="font-size: 2rem; margin-bottom: 10px; color: #ffe066;"></h2>
+                    <div id="role-points" style="font-size: 1.2rem; color: #888;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="ready-btn" style="display: none; margin-top: 30px;">
+            <button class="btn" onclick="readyToPlay()">I'm Ready</button>
+        </div>
+    </div>
+
+    <!-- POLICE SCREEN -->
+    <div id="police-screen" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>👮 You are the Police</h2>
+            <div id="timer-display" style="font-size: 1.5rem; font-weight: bold; color: #ff6b6b;">60s</div>
+        </div>
+        
+        <p style="color: #888;">Find the thief among these suspects:</p>
+        
+        <div id="suspects-list" style="margin: 20px 0;">
+            <!-- Suspects will be listed here -->
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 10px;">
+            <p style="color: #ff6b6b; font-weight: bold;">⚠️ Choose wisely! Wrong arrest = Thief wins</p>
+        </div>
+    </div>
+
+    <!-- NORMAL PLAYER VIEW -->
+    <div id="player-screen" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>🎭 Your Role: <span id="current-role"></span></h2>
+            <div id="player-timer-display" style="font-size: 1.5rem; font-weight: bold; color: #ff6b6b;">60s</div>
+        </div>
+        
+        <div style="background: #2a2a2a; padding: 20px; border-radius: 15px; margin: 20px 0;">
+            <div style="font-size: 1.5rem; color: #ffe066; margin-bottom: 10px;">
+                💰 <span id="current-points"></span> Points
+            </div>
+            <p id="role-desc" style="color: #ccc; font-style: italic; margin-bottom: 10px;"></p>
+            <p style="color: #888; font-size: 0.9rem;">Waiting for police to make an arrest...</p>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3 style="font-size: 1.2rem; margin-bottom: 15px;">Other Players:</h3>
+            <div id="other-players-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;">
+                <!-- Other players shown without roles -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" style="display: none; text-align: center;">
+        <div id="result-icon" style="font-size: 5rem; margin-bottom: 20px;"></div>
+        <h1 id="result-title" style="font-size: 3rem; margin-bottom: 20px; color: #ffe066;"></h1>
+        <p id="result-message" style="font-size: 1.2rem; color: #ccc; margin-bottom: 30px;"></p>
+        
+        <div style="background: #2a2a2a; padding: 20px; border-radius: 15px; margin: 0 auto 30px auto; max-width: 500px;">
+            <h3>Round Standings</h3>
+            <table style="width: 100%; text-align: left; margin-top: 15px;">
+                <thead>
+                    <tr style="color: #888; border-bottom: 1px solid #444;">
+                        <th style="padding: 10px;">Rank</th>
+                        <th style="padding: 10px;">Player</th>
+                        <th style="padding: 10px;">Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+        
+        {% if is_host %}
+        <button class="btn" onclick="nextRound()">▶ Next Round</button>
+        {% else %}
+        <p style="color: #888; font-style: italic;">Waiting for host...</p>
+        {% endif %}
+    </div>
+
+    <!-- PODIUM SCREEN -->
+    <div id="podium-screen" style="display: none; text-align: center;">
+        <h1 style="font-size: 3rem; margin-bottom: 30px; color: #ffe066;">🏆 GAME OVER</h1>
+        
+        <div style="display: flex; justify-content: center; align-items: flex-end; height: 300px; margin-bottom: 40px;">
+            <!-- Silver -->
+            <div style="width: 100px; margin: 0 10px; text-align: center;">
+                <div style="margin-bottom: 10px; font-weight: bold;" id="silver-name"></div>
+                <div style="height: 150px; background: silver; border-radius: 10px 10px 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; color: #333; font-weight: bold;">
+                    <div id="silver-score"></div>
+                </div>
+                <div style="font-size: 2rem;">🥈</div>
+            </div>
+            
+            <!-- Gold -->
+            <div style="width: 100px; margin: 0 10px; text-align: center;">
+                <div style="margin-bottom: 10px; font-weight: bold; font-size: 1.2rem; color: #ffe066;" id="gold-name"></div>
+                <div style="height: 200px; background: gold; border-radius: 10px 10px 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; color: #333; font-weight: bold;">
+                    <div id="gold-score"></div>
+                </div>
+                <div style="font-size: 3rem;">🥇</div>
+            </div>
+            
+            <!-- Bronze -->
+            <div style="width: 100px; margin: 0 10px; text-align: center;">
+                <div style="margin-bottom: 10px; font-weight: bold;" id="bronze-name"></div>
+                <div style="height: 100px; background: #cd7f32; border-radius: 10px 10px 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; color: #333; font-weight: bold;">
+                    <div id="bronze-score"></div>
+                </div>
+                <div style="font-size: 2rem;">🥉</div>
+            </div>
+        </div>
+        
+        <div style="background: #2a2a2a; padding: 20px; border-radius: 15px; margin: 20px auto; max-width: 500px;">
+            <h3>Final Standings</h3>
+            <div id="final-leaderboard"></div>
+        </div>
+        
+        <button class="btn" onclick="location.href='/'">🏠 Back to Home</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+        .container {
+            width: 95% !important;
+            padding: 10px !important;
+        }
+        h1 { font-size: 2rem !important; }
+        h2 { font-size: 1.5rem !important; }
+        .btn {
+            padding: 15px 20px !important; /* Larger touch target */
+            font-size: 1.1rem !important;
+            width: 100% !important; /* Full width buttons on mobile */
+            margin-bottom: 10px !important;
+        }
+        .card {
+            width: 80vw !important; /* Responsive card width */
+            height: 120vw !important;
+        }
+        #player-list, #other-players-list {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+        }
+    }
+</style>
+
+<script>
+    const roomCode = "{{ room.room_code }}";
+    const playerName = "{{ player.name }}";
+    const sessionId = "{{ player.session_id }}";
+    const isHost = {{ is_host|yesno:"true,false" }};
+
+    let myRole = null;
+    let myPoints = 0;
+    let myDesc = "";
+    let isPolice = false;
+    let isThief = false;
+    let allPlayers = [];
+    let chitRevealed = false;
+
+    // Debug info
+    console.log('🎮 Initializing game room');
+    console.log('Room Code:', roomCode);
+    console.log('Player Name:', playerName);
+    console.log('Session ID:', sessionId);
+    console.log('Is Host:', isHost);
+
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/room/' + roomCode + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log('📨 Received message:', data);
+
+        if (data.action === 'player_joined') {
+            console.log('👥 Player joined, updating list');
+            updatePlayerList(data.players);
+        } 
+        else if (data.action === 'role_assigned') {
+            console.log('🎭 Role assignment message received');
+            
+            if (data.target_session_id === sessionId) {
+                console.log('✅ This role is for me!');
+                myRole = data.role;
+                myPoints = data.points;
+                myDesc = data.description;
+                isPolice = data.is_police;
+                isThief = data.is_thief;
+                
+                if (data.all_players) {
+                    allPlayers = data.all_players;
+                }
+                
+                showChitScreen();
+            }
+        }
+        else if (data.action === 'timer_tick') {
+            updateTimer(data.seconds);
+        }
+        else if (data.action === 'error') {
+            console.error('❌ Error from server:', data.message);
+            alert('Error: ' + data.message);
+        }
+        else if (data.action === 'round_ended') {
+            console.log('🏁 Round ended');
+            showResult(data.winner, data.thief_name, data.scores);
+        }
+        else if (data.action === 'game_over') {
+            console.log('🏆 Game Over');
+            showPodium(data.scores);
+        }
+        else if (data.action === 'settings_data') {
+            console.log('⚙️ Settings data received');
+            populateSettingsModal(data.settings);
+        }
+        else if (data.action === 'settings_saved') {
+            alert(data.message);
+            closeSettings();
+        }
+        else if (data.action === 'reset_round') {
+            console.log('🔄 Round reset requested. Reloading...');
+            location.reload();
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('❌ WebSocket closed unexpectedly');
+        const status = document.getElementById('connection-status');
+        if (status) {
+            status.textContent = 'Disconnected';
+            status.style.background = '#ff4444';
+        }
+        setTimeout(() => location.reload(), 3000);
+    };
+
+    chatSocket.onopen = function(e) {
+        console.log('✅ WebSocket connected successfully');
+        const status = document.getElementById('connection-status');
+        if (status) {
+            status.textContent = 'Connected';
+            status.style.background = '#00C851';
+        }
+        chatSocket.send(JSON.stringify({
+            'action': 'join',
+            'message': playerName + ' joined'
+        }));
+    };
+
+    function startGame() {
+        console.log('🎮 Host starting game...');
+        chatSocket.send(JSON.stringify({
+            'action': 'start_game',
+            'message': 'Host started the game'
+        }));
+    }
+
+    function openSettings() {
+        document.getElementById('settings-modal').style.display = 'block';
+        document.getElementById('roles-settings-container').innerHTML = '<p style="color: #888;">Loading roles...</p>';
+        
+        // Request current settings
+        chatSocket.send(JSON.stringify({
+            'action': 'get_settings'
+        }));
+    }
+
+    function closeSettings() {
+        document.getElementById('settings-modal').style.display = 'none';
+    }
+
+    function populateSettingsModal(settings) {
+        document.getElementById('setting-max-rounds').value = settings.max_rounds;
+        
+        const container = document.getElementById('roles-settings-container');
+        container.innerHTML = '';
+        
+        settings.roles.forEach(role => {
+            container.innerHTML += `
+                <div class="role-setting-item" data-id="${role.id}" style="background: #333; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; gap: 10px; align-items: center;">
+                    <input type="text" class="role-name-input" value="${role.name}" style="flex: 1; padding: 5px; background: #444; border: 1px solid #555; color: white; border-radius: 4px;">
+                    <input type="number" class="role-points-input" value="${role.win_points}" style="width: 80px; padding: 5px; background: #444; border: 1px solid #555; color: white; border-radius: 4px;">
+                    <span style="font-size: 0.8rem; color: #888;">pts</span>
+                </div>
+            `;
+        });
+    }
+
+    function saveSettings() {
+        const maxRounds = document.getElementById('setting-max-rounds').value;
+        const roleItems = document.querySelectorAll('.role-setting-item');
+        const rolesData = [];
+        
+        roleItems.forEach(item => {
+            rolesData.push({
+                'id': item.getAttribute('data-id'),
+                'name': item.querySelector('.role-name-input').value,
+                'win_points': item.querySelector('.role-points-input').value
+            });
+        });
+        
+        chatSocket.send(JSON.stringify({
+            'action': 'update_settings',
+            'max_rounds': maxRounds,
+            'roles': rolesData
+        }));
+    }
+
+    function updatePlayerList(players) {
+        const list = document.getElementById('player-list');
+        list.innerHTML = '';
+        players.forEach(p => {
+            list.innerHTML += `
+                <div class="player-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                    <img src="/static/images/icon_civilian.png" style="width: 50px; height: 50px; margin-bottom: 10px;">
+                    <div style="font-weight: bold;">${p.name}</div>
+                </div>
+            `;
+        });
+    }
+
+    function showChitScreen() {
+        document.getElementById('lobby-screen').style.display = 'none';
+        document.getElementById('chit-screen').style.display = 'block';
+        
+        // Set role info on the back of the card
+        let iconSrc = '/static/images/icon_civilian.png';
+        if (isPolice) iconSrc = '/static/images/icon_police.png';
+        else if (isThief) iconSrc = '/static/images/icon_thief.png';
+        
+        document.getElementById('role-icon-container').innerHTML = `<img src="${iconSrc}" style="width: 80px; height: 80px;">`;
+        document.getElementById('role-name').textContent = myRole;
+        document.getElementById('role-points').textContent = myPoints + ' Points';
+        
+        // Reset card flip
+        const card = document.getElementById('chit-card');
+        card.style.transform = 'rotateY(0deg)';
+        chitRevealed = false;
+        document.getElementById('ready-btn').style.display = 'none';
+    }
+
+    function revealRole() {
+        if (chitRevealed) return;
+        
+        const card = document.getElementById('chit-card');
+        card.style.transform = 'rotateY(180deg)';
+        chitRevealed = true;
+        
+        setTimeout(() => {
+            document.getElementById('ready-btn').style.display = 'block';
+        }, 600);
+    }
+
+    function readyToPlay() {
+        document.getElementById('chit-screen').style.display = 'none';
+        
+        if (isPolice) {
+            showPoliceScreen();
+        } else {
+            showPlayerScreen();
+        }
+    }
+
+    function showPoliceScreen() {
+        document.getElementById('police-screen').style.display = 'block';
+        
+        const suspectsList = document.getElementById('suspects-list');
+        suspectsList.innerHTML = '';
+        
+        allPlayers.forEach(p => {
+            if (p.name !== playerName) {
+                suspectsList.innerHTML += `
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 1.5rem; margin-right: 10px;">👤</span>
+                            <span style="font-size: 1.2rem;">${p.name}</span>
+                        </div>
+                        <button class="btn" onclick="arrestPlayer('${p.name}')" style="width: auto; padding: 10px 20px; margin: 0;">
+                            🚨 Arrest
+                        </button>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    function showPlayerScreen() {
+        document.getElementById('player-screen').style.display = 'block';
+        document.getElementById('current-role').textContent = myRole;
+        document.getElementById('current-points').textContent = myPoints;
+        document.getElementById('role-desc').textContent = myDesc;
+        
+        const otherPlayersList = document.getElementById('other-players-list');
+        otherPlayersList.innerHTML = '';
+        
+        allPlayers.forEach(p => {
+            if (p.name !== playerName) {
+                otherPlayersList.innerHTML += `
+                    <div class="player-card" style="background: #333; padding: 10px; border-radius: 10px;">
+                        <div style="font-size: 2rem;">👤</div>
+                        <div style="font-size: 0.9rem;">${p.name}</div>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    function arrestPlayer(name) {
+        console.log('🚨 Button Clicked! Attempting to arrest:', name);
+        console.log('Session ID:', sessionId);
+        
+        if (confirm(`Are you sure you want to arrest ${name}?`)) {
+            const arrestMessage = {
+                'action': 'arrest',
+                'session_id': sessionId,
+                'arrested_player': name
+            };
+            console.log('📤 Sending arrest message:', arrestMessage);
+            chatSocket.send(JSON.stringify(arrestMessage));
+        }
+    }
+    
+    function updateTimer(seconds) {
+        const display = document.getElementById('timer-display');
+        const pDisplay = document.getElementById('player-timer-display');
+        if (display) display.textContent = seconds + 's';
+        if (pDisplay) pDisplay.textContent = seconds + 's';
+        
+        if (seconds <= 10) {
+            if (display) display.style.color = 'red';
+            if (pDisplay) pDisplay.style.color = 'red';
+        }
+    }
+
+    function showResult(winner, thiefName, scores) {
+        document.getElementById('police-screen').style.display = 'none';
+        document.getElementById('player-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const icon = document.getElementById('result-icon');
+        const title = document.getElementById('result-title');
+        const message = document.getElementById('result-message');
+        
+        if (winner === 'POLICE') {
+            icon.textContent = '👮';
+            title.textContent = 'Police Wins!';
+            message.innerHTML = `The thief <span style="color: #ff6b6b; font-weight: bold; font-size: 1.5rem;">${thiefName}</span> was caught!`;
+        } else {
+            icon.textContent = '🎭';
+            title.textContent = 'Thief Escapes!';
+            message.innerHTML = `<span style="color: #ff6b6b; font-weight: bold; font-size: 1.5rem;">${thiefName}</span> was the thief and got away!`;
+        }
+        
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        leaderboardBody.innerHTML = '';
+        scores.forEach((s, i) => {
+            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+            leaderboardBody.innerHTML += `
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 10px;">${medal} ${i+1}</td>
+                    <td style="padding: 10px;">${s.name}</td>
+                    <td style="padding: 10px; color: #ffe066; font-weight: bold;">${s.score}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function nextRound() {
+        // Send request to server to reset everyone
+        chatSocket.send(JSON.stringify({
+            'action': 'next_round'
+        }));
+    }
+
+    function showPodium(scores) {
+        // Hide all other screens
+        document.getElementById('lobby-screen').style.display = 'none';
+        document.getElementById('chit-screen').style.display = 'none';
+        document.getElementById('police-screen').style.display = 'none';
+        document.getElementById('player-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('podium-screen').style.display = 'block';
+        
+        // Gold
+        if (scores[0]) {
+            const goldName = document.getElementById('gold-name');
+            const goldScore = document.getElementById('gold-score');
+            if (goldName) goldName.textContent = scores[0].name;
+            if (goldScore) goldScore.textContent = scores[0].score;
+        }
+        
+        // Silver
+        if (scores[1]) {
+            const silverName = document.getElementById('silver-name');
+            const silverScore = document.getElementById('silver-score');
+            if (silverName) silverName.textContent = scores[1].name;
+            if (silverScore) silverScore.textContent = scores[1].score;
+        }
+        
+        // Bronze
+        if (scores[2]) {
+            const bronzeName = document.getElementById('bronze-name');
+            const bronzeScore = document.getElementById('bronze-score');
+            if (bronzeName) bronzeName.textContent = scores[2].name;
+            if (bronzeScore) bronzeScore.textContent = scores[2].score;
+        }
+        
+        // List
+        const list = document.getElementById('final-leaderboard');
+        list.innerHTML = '';
+        scores.forEach((s, i) => {
+            if (i > 2) {
+                list.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #444;">
+                        <span>#${i+1} ${s.name}</span>
+                        <span style="color: #ffe066;">${s.score}</span>
+                    </div>
+                `;
+            }
+        });
+    }
+</script>
+{% endblock %}
