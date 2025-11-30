@@ -236,8 +236,9 @@
     console.log('Session ID:', sessionId);
     console.log('Is Host:', isHost);
 
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const chatSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/room/' + roomCode + '/'
+        protocol + window.location.host + '/ws/room/' + roomCode + '/'
     );
 
     chatSocket.onmessage = function(e) {
