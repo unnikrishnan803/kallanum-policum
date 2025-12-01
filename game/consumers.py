@@ -299,6 +299,14 @@ class GameConsumer(AsyncWebsocketConsumer):
         }))
 
     @database_sync_to_async
+    def get_round_status(self, round_id):
+        try:
+            round_obj = Round.objects.get(id=round_id)
+            return round_obj.status
+        except Round.DoesNotExist:
+            return 'COMPLETED'
+
+    @database_sync_to_async
     def get_players_in_room(self):
         room = Room.objects.get(room_code=self.room_code)
         return [{'name': p.name, 'avatar': p.avatar, 'session_id': p.session_id} for p in room.players.all()]
