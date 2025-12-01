@@ -190,8 +190,71 @@ input:focus {
     border: 3px solid #FAFAFA;
 }
 
-/* Mobile */
+/* Mobile & Responsive Design */
 @media (max-width: 768px) {
-    h1 { font-size: 2.5rem; }
-    .wave-container { height: 250px; }
+    .container {
+        padding: 15px;
+    }
+
+    h1 { 
+        font-size: 2.2rem; 
+        margin-bottom: 5px;
+    }
+    
+    .wave-container { 
+        height: 200px; 
+    }
+
+    .glass-card {
+        padding: 20px;
+        margin-bottom: 15px;
+        border-radius: 20px;
+    }
+
+    .btn {
+        padding: 15px 30px;
+        font-size: 1rem;
+        width: 100%; /* Full width buttons on mobile */
+        margin-bottom: 10px;
+    }
+
+    /* Settings Modal - Bottom Sheet Style */
+    #settings-modal .glass-card {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        border-radius: 30px 30px 0 0;
+        height: 85vh; /* Take up 85% of screen */
+        overflow-y: auto;
+        animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    /* Larger Touch Targets */
+    input {
+        padding: 15px;
+        font-size: 1rem;
+    }
+
+    .role-setting-item {
+        padding: 15px !important;
+    }
+
+    /* Adjust Player Grid */
+    .player-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+
+    .player-avatar {
+        width: 50px;
+        height: 50px;
+    }
 }
