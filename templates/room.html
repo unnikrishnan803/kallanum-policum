@@ -247,10 +247,9 @@
     console.log('Room Code:', roomCode);
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     let chatSocket = null;
-    let reconnectInterval = 1000;
 
     function connectWebSocket() {
-        console.log("🔌 Connecting to WebSocket...");
+        console.log("🔌 Connecting...");
         const status = document.getElementById('connection-status');
         if (status) status.innerHTML = '<span style="color: #f1c40f;">⏳ Connecting...</span>';
 
@@ -259,9 +258,8 @@
         );
 
         chatSocket.onopen = function(e) {
-            console.log('✅ WebSocket connected successfully');
+            console.log('✅ Connected');
             if (status) status.innerHTML = '<span style="color: #2ed573;">✅ Connected</span>';
-            reconnectInterval = 1000; // Reset backoff
             
             chatSocket.send(JSON.stringify({
                 'action': 'join',
@@ -296,7 +294,6 @@
                 updateTimer(data.seconds);
             }
             else if (data.action === 'reset_round') {
-                console.log('🔄 Round reset requested.');
                 resetUI();
             }
             else if (data.action === 'host_change') {
@@ -311,17 +308,16 @@
         };
 
         chatSocket.onclose = function(e) {
-            console.error('❌ WebSocket closed unexpectedly. Reconnecting in ' + reconnectInterval + 'ms...');
-            if (status) status.innerHTML = '<span style="color: #ff4757;">❌ Disconnected. Reconnecting...</span>';
+            console.log('❌ Disconnected. Retrying in 3s...');
+            if (status) status.innerHTML = '<span style="color: #ff4757;">❌ Disconnected</span>';
             
             setTimeout(function() {
-                reconnectInterval = Math.min(reconnectInterval * 2, 10000);
                 connectWebSocket();
-            }, reconnectInterval);
+            }, 3000);
         };
         
         chatSocket.onerror = function(err) {
-            console.error('WebSocket Error:', err);
+            console.error('Socket Error:', err);
             chatSocket.close();
         };
     }
