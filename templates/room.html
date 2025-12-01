@@ -40,7 +40,12 @@
         </div>
         
         <div id="player-list" class="player-grid">
-            <!-- Players will be added here -->
+            {% for p in room.players.all %}
+            <div class="player-card fade-in-up">
+                <img src="{% static 'images/icon_civilian.png' %}" class="player-avatar">
+                <div style="font-weight: bold; font-size: 1.1rem;">{{ p.name }}</div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 
