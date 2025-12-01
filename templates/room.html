@@ -256,21 +256,6 @@
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        console.log('📨 Received message:', data);
-
-        if (data.action === 'player_joined') {
-            console.log('👥 Player joined, updating list');
-            updatePlayerList(data.players);
-        } 
-        else if (data.action === 'role_assigned') {
-            console.log('🎭 Role assignment message received');
-            
-            if (data.target_session_id === sessionId) {
-                console.log('✅ This role is for me!');
-                myRole = data.role;
-                myPoints = data.points;
-                myDesc = data.description;
-                isPolice = data.is_police;
                 isThief = data.is_thief;
                 
                 if (data.all_players) {
