@@ -211,14 +211,17 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def run_timer(self, round_id):
         """Timer loop that runs for 60 seconds"""
+        print(f"⏰ Timer STARTED for Round {round_id}")
         try:
             for i in range(60, -1, -1):
                 # Check if round is still playing
                 status = await self.get_round_status(round_id)
                 
                 if status == 'COMPLETED':
+                    print(f"⏰ Timer STOPPED: Round {round_id} completed early.")
                     break
                 
+                # Broadcast timer tick
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -228,6 +231,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 )
                 
                 if i == 0:
+                    print(f"⏰ Timer EXPIRED for Round {round_id}")
                     # Timeout - Thief Wins
                     result = await self.process_timeout(round_id)
                     await self.channel_layer.group_send(
@@ -244,7 +248,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 
                 await asyncio.sleep(1)
         except asyncio.CancelledError:
+            print(f"⏰ Timer CANCELLED for Round {round_id}")
             pass
+        except Exception as e:
+            print(f"❌ Timer CRASHED for Round {round_id}: {e}")
+            import traceback
+            traceback.print_exc()
 
     async def player_update(self, event):
         await self.send(text_data=json.dumps({
