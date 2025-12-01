@@ -58,6 +58,28 @@
 
     </div>
 
+    <!-- Play Online Card -->
+    <div class="glass-card fade-in-up delay-3" style="max-width: 400px; margin: 30px auto; text-align: left; border: 2px solid var(--primary-color);">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <div style="font-size: 2.5rem;">🌍</div>
+            <div>
+                <h2 style="color: var(--primary-color); margin: 0;">Play Online</h2>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Join Public Room 5858</span>
+            </div>
+        </div>
+        
+        <form method="POST" action="/">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="play_online">
+            <div style="margin-bottom: 15px;">
+                <input type="text" name="name" placeholder="Your Name" required style="background: #F5F5F5; border: none; padding: 15px; border-radius: 12px; width: 100%;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; background: linear-gradient(45deg, #FFB74D, #FF9800); box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);">
+                🚀 Join Public Game
+            </button>
+        </form>
+    </div>
+
     <!-- Footer -->
     <div class="fade-in-up delay-3" style="margin-top: 50px; color: var(--text-muted); font-size: 0.9rem;">
         <p>© 2025 Kallanum Policum • Designed for Fun</p>
