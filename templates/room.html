@@ -245,19 +245,6 @@
     // Debug info
     console.log('🎮 Initializing game room');
     console.log('Room Code:', roomCode);
-    console.log('Player Name:', playerName);
-    console.log('Session ID:', sessionId);
-    console.log('Is Host:', isHost);
-
-    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    const chatSocket = new WebSocket(
-        protocol + window.location.host + '/ws/room/' + roomCode + '/'
-    );
-
-    chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-                isThief = data.is_thief;
-                
                 if (data.all_players) {
                     allPlayers = data.all_players;
                 }
