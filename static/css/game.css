@@ -4,6 +4,7 @@
 :root {
     --primary-color: #FFB74D; /* Golden Yellow/Orange */
     --primary-dark: #F57C00;
+    --accent-color: #FF9800; /* Deep Orange for Join Card */
     --bg-color: #FAFAFA; /* Off-White Body */
     --header-bg: #FFCC80; /* Peach/Orange Header */
     --card-bg: #FFFFFF;
