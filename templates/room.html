@@ -245,9 +245,93 @@
     // Debug info
     console.log('🎮 Initializing game room');
     console.log('Room Code:', roomCode);
-                if (data.all_players) {
-                    allPlayers = data.all_players;
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    let chatSocket = null;
+    let reconnectInterval = 1000;
+
+    function connectWebSocket() {
+        console.log("🔌 Connecting to WebSocket...");
+        const status = document.getElementById('connection-status');
+        if (status) status.innerHTML = '<span style="color: #f1c40f;">⏳ Connecting...</span>';
+
+        chatSocket = new WebSocket(
+            protocol + window.location.host + '/ws/room/' + roomCode + '/'
+        );
+
+        chatSocket.onopen = function(e) {
+            console.log('✅ WebSocket connected successfully');
+            if (status) status.innerHTML = '<span style="color: #2ed573;">✅ Connected</span>';
+            reconnectInterval = 1000; // Reset backoff
+            
+            chatSocket.send(JSON.stringify({
+                'action': 'join',
+                'message': playerName + ' joined'
+            }));
+        };
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            if (data.action === 'player_update' || data.action === 'player_joined') {
+                updatePlayerList(data.players);
+            }
+            else if (data.action === 'send_role_to_player') {
+                if (data.target_session_id === sessionId) {
+                    myRole = data.role;
+                    myPoints = data.points;
+                    myDesc = data.description;
+                    isPolice = data.is_police;
+                    isThief = data.is_thief;
+                    if (data.all_players) allPlayers = data.all_players;
+                    showChitScreen();
                 }
+            }
+            else if (data.action === 'round_ended') {
+                showResult(data);
+            }
+            else if (data.action === 'game_over') {
+                showPodium(data.scores);
+            }
+            else if (data.action === 'timer_tick') {
+                updateTimer(data.seconds);
+            }
+            else if (data.action === 'reset_round') {
+                console.log('🔄 Round reset requested.');
+                resetUI();
+            }
+            else if (data.action === 'host_change') {
+                if (data.new_host_session_id === sessionId) {
+                    alert("👑 You are now the Host!");
+                    location.reload();
+                }
+            }
+            else if (data.action === 'error') {
+                alert("⚠️ Error: " + data.message);
+            }
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('❌ WebSocket closed unexpectedly. Reconnecting in ' + reconnectInterval + 'ms...');
+            if (status) status.innerHTML = '<span style="color: #ff4757;">❌ Disconnected. Reconnecting...</span>';
+            
+            setTimeout(function() {
+                reconnectInterval = Math.min(reconnectInterval * 2, 10000);
+                connectWebSocket();
+            }, reconnectInterval);
+        };
+        
+        chatSocket.onerror = function(err) {
+            console.error('WebSocket Error:', err);
+            chatSocket.close();
+        };
+    }
+
+    // Initial Connection
+    connectWebSocket();
+
+    function resetUI() {
+        myRole = null;
+        myPoints = 0;
         myDesc = "";
         isPolice = false;
         isThief = false;
