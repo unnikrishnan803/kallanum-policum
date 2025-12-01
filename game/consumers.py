@@ -23,23 +23,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.accept()
             print(f"✅ Connected to {self.room_group_name}")
             
-            # Run AI Watchdog to fix any stuck states
-            was_stuck = await self.check_stuck_rounds()
-            if was_stuck:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'error',
-                        'message': '🤖 AI Watchdog: Detected a stuck round and fixed it. Please restart.'
-                    }
-                )
-                # Also force UI reset
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'reset_round'
-                    }
-                )
+            # AI Watchdog removed as per user request
+            # was_stuck = await self.check_stuck_rounds()
+            # if was_stuck: ...
             
             # Send current player list to all connected clients
             players = await self.get_players_in_room()
