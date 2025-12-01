@@ -21,24 +21,39 @@
         <div class="glass-card fade-in-up delay-1" style="flex: 1; min-width: 300px; max-width: 400px; text-align: left;">
             <div style="font-size: 3rem; margin-bottom: 20px;">🎮</div>
             <h2 style="color: var(--primary-color); margin-bottom: 10px;">Create Room</h2>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">Host a new game and invite your friends to play.</p>
-            <button class="btn btn-primary" onclick="createRoom()" style="width: 100%;">
-                Start New Game
-            </button>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Host a new game.</p>
+            
+            <form method="POST" action="/">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create">
+                <div style="margin-bottom: 15px;">
+                    <input type="text" name="name" placeholder="Your Name" required style="background: #F5F5F5; border: none; padding: 15px; border-radius: 12px; width: 100%;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Start New Game
+                </button>
+            </form>
         </div>
 
         <!-- Join Room Card -->
         <div class="glass-card fade-in-up delay-2" style="flex: 1; min-width: 300px; max-width: 400px; text-align: left;">
             <div style="font-size: 3rem; margin-bottom: 20px;">🚀</div>
             <h2 style="color: var(--accent-color); margin-bottom: 10px;">Join Room</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Enter a room code to join an existing game.</p>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Join an existing game.</p>
             
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="room-code-input" placeholder="Enter Code (e.g. ABCD12)" style="text-transform: uppercase;">
-                <button class="btn" onclick="joinRoom()" style="padding: 15px 25px; border-color: var(--accent-color); color: var(--accent-color);">
-                    Join
-                </button>
-            </div>
+            <form method="POST" action="/">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="join">
+                <div style="margin-bottom: 15px;">
+                    <input type="text" name="name" placeholder="Your Name" required style="background: #F5F5F5; border: none; padding: 15px; border-radius: 12px; width: 100%;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" name="room_code" placeholder="Room Code" required style="text-transform: uppercase; background: #F5F5F5; border: none; padding: 15px; border-radius: 12px; flex: 1;">
+                    <button type="submit" class="btn" style="padding: 15px 25px; border-color: var(--accent-color); color: var(--accent-color); background: transparent; border: 2px solid var(--accent-color);">
+                        Join
+                    </button>
+                </div>
+            </form>
         </div>
 
     </div>
@@ -49,39 +64,6 @@
     </div>
 
 </div>
-
-<script>
-    function createRoom() {
-        const btn = document.querySelector('.btn-primary');
-        btn.innerHTML = 'Creating...';
-        btn.style.opacity = '0.7';
-        
-        fetch('/create-room/')
-            .then(response => response.json())
-            .then(data => {
-                window.location.href = '/room/' + data.room_code + '/';
-            });
-    }
-
-    function joinRoom() {
-        const code = document.getElementById('room-code-input').value.trim().toUpperCase();
-        if (code) {
-            window.location.href = '/room/' + code + '/';
-        } else {
-            const input = document.getElementById('room-code-input');
-            input.style.borderColor = 'var(--secondary-color)';
-            input.classList.add('shake');
-            setTimeout(() => input.classList.remove('shake'), 500);
-        }
-    }
-
-    // Add enter key support
-    document.getElementById('room-code-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            joinRoom();
-        }
-    });
-</script>
 
 <style>
     .shake {
