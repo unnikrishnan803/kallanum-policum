@@ -33,40 +33,7 @@ def index(request):
             except Room.DoesNotExist:
                 return render(request, 'index.html', {'error': 'Room not found'})
 
-        elif action == 'play_online':
-            room_code = "5858"
-            try:
-                room = Room.objects.get(room_code=room_code)
-            except Room.DoesNotExist:
-                # Create the public room if it doesn't exist
-                room = Room.objects.create(room_code=room_code, host_session_id=session_id)
-            
-            # Check if room is full (Max 12)
-            # We exclude the current player if they are already in the room to allow re-joining
-            current_player_count = room.players.count()
-            is_already_in = room.players.filter(session_id=session_id).exists()
-            
-            if current_player_count >= 12 and not is_already_in:
-                return render(request, 'index.html', {'error': 'Public Room 5858 is Full (Max 12 Players)!'})
-
-            # Join the room
-            player, created = Player.objects.get_or_create(
-                room=room, session_id=session_id,
-                defaults={'name': name}
-            )
-            
-            # If room was just created or empty, ensure this player is host
-            if room.players.count() == 1:
-                player.is_host = True
-                player.save()
-                room.host_session_id = session_id
-                room.save()
-            
-            if not created and player.name != name:
-                player.name = name
-                player.save()
-                
-            return redirect('room', room_code=room.room_code)
+        # Play Online Removed
 
     return render(request, 'index.html')
 
