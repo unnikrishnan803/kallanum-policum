@@ -307,6 +307,13 @@
             console.log('🔄 Round reset requested.');
             resetUI();
         }
+        else if (data.action === 'host_change') {
+            console.log('👑 Host changed to:', data.new_host_session_id);
+            if (data.new_host_session_id === sessionId) {
+                alert("👑 You are now the Host!");
+                location.reload(); // Reload to update UI buttons
+            }
+        }
     };
 
     chatSocket.onclose = function(e) {

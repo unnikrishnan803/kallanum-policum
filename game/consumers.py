@@ -40,6 +40,10 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         try:
             print(f"🔌 Disconnecting from {self.room_group_name} (Code: {close_code})")
+            
+            # Handle Player Disconnect Logic
+            await self.handle_player_disconnect(self.scope['session'].session_key)
+            
             if self.timer_task:
                 self.timer_task.cancel()
                 
@@ -49,6 +53,8 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
         except Exception as e:
             print(f"❌ Error in disconnect: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     async def receive(self, text_data):
         try:
@@ -616,9 +622,90 @@ class GameConsumer(AsyncWebsocketConsumer):
             for p in room.players.all().order_by('-total_score')
         ]
         
-        return {
-            'winner': round_obj.winner,
-            'thief_name': round_obj.thief_player.name,
-            'scores': scores,
-            'all_roles': all_roles_reveal
-        }
+    @database_sync_to_async
+    def handle_player_disconnect(self, session_id):
+        try:
+            room = Room.objects.get(room_code=self.room_code)
+            player = room.players.filter(session_id=session_id).first()
+            
+            if not player:
+                return
+
+            print(f"👋 Player {player.name} disconnected.")
+            
+            # 1. Check if Host Left
+            if player.is_host:
+                print("👑 Host disconnected! Transferring admin rights...")
+                # Find next available player
+                next_host = room.players.exclude(id=player.id).first()
+                if next_host:
+                    next_host.is_host = True
+                    next_host.save()
+                    room.host_session_id = next_host.session_id
+                    room.save()
+                    print(f"👑 New Host is: {next_host.name}")
+                    
+                    # Notify everyone about new host
+                    asyncio.create_task(self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            'type': 'host_change',
+                            'new_host_session_id': next_host.session_id
+                        }
+                    ))
+                else:
+                    print("⚠️ No players left. Room might be empty.")
+
+            # 2. Check if Active Role Left (Police/Thief)
+            current_round = room.rounds.filter(status='PLAYING').first()
+            if current_round:
+                is_police = current_round.police_player == player
+                is_thief = current_round.thief_player == player
+                
+                if is_police or is_thief:
+                    print(f"🚨 Critical Role Disconnected! (Police: {is_police}, Thief: {is_thief})")
+                    current_round.status = 'ABANDONED'
+                    current_round.save()
+                    
+                    # Notify everyone round is aborted
+                    asyncio.create_task(self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            'type': 'round_aborted',
+                            'reason': f"{player.name} ({'Police' if is_police else 'Thief'}) disconnected!"
+                        }
+                    ))
+
+            # Mark player as inactive or delete (depending on game logic)
+            # For now, we keep them in DB but they are offline. 
+            # If you want to remove them from the list:
+            player.delete()
+            
+            # Broadcast updated player list
+            players_list = [{'name': p.name, 'avatar': p.avatar, 'session_id': p.session_id} for p in room.players.all()]
+            asyncio.create_task(self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'player_update',
+                    'players': players_list
+                }
+            ))
+
+        except Exception as e:
+            print(f"❌ Error handling disconnect: {e}")
+
+    async def host_change(self, event):
+        await self.send(text_data=json.dumps({
+            'action': 'host_change',
+            'new_host_session_id': event['new_host_session_id']
+        }))
+
+    async def round_aborted(self, event):
+        await self.send(text_data=json.dumps({
+            'action': 'error',
+            'message': f"Round Aborted: {event['reason']}"
+        }))
+        # Reset UI
+        await self.send(text_data=json.dumps({
+            'action': 'reset_round'
+        }))
