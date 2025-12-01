@@ -336,6 +336,14 @@
             'message': playerName + ' joined'
         }));
     };
+    
+    // AI Connection Watchdog
+    setTimeout(() => {
+        if (chatSocket.readyState !== WebSocket.OPEN) {
+            console.log('🤖 AI Watchdog: Connection stuck. Reloading...');
+            location.reload();
+        }
+    }, 10000); // Check after 10 seconds
 
     function resetUI() {
         // Reset local variables
