@@ -357,10 +357,13 @@ class GameConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def verify_police(self, session_id):
         room = Room.objects.get(room_code=self.room_code)
-        current_round = room.rounds.filter(status='PLAYING').first()
+        # Get the latest playing round
+        current_round = room.rounds.filter(status='PLAYING').order_by('-id').first()
+        
         if not current_round:
             print("❌ verify_police: No playing round found")
             return False
+            
         if not current_round.police_player:
             print("❌ verify_police: No police player assigned")
             return False
@@ -377,6 +380,15 @@ class GameConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def start_new_round(self, player_count):
         room = Room.objects.get(room_code=self.room_code)
+        
+        # CRITICAL FIX: Close any existing playing rounds to prevent "zombie rounds"
+        active_rounds = room.rounds.filter(status='PLAYING')
+        if active_rounds.exists():
+            print(f"⚠️ Found {active_rounds.count()} active rounds. Closing them...")
+            for r in active_rounds:
+                r.status = 'ABANDONED'
+                r.save()
+        
         room.status = 'IN_PROGRESS'
         room.save()
         
@@ -391,6 +403,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         random.shuffle(other_roles)
         
         # We need (player_count - 2) other roles
+        # If not enough roles, reuse civilians (just in case)
+        while len(other_roles) < player_count - 2:
+             other_roles.append(other_roles[0]) # Duplicate first role if needed
+             
         selected_roles = [police_role, thief_role] + other_roles[:player_count-2]
         
         # Verify we have Police and Thief
@@ -399,8 +415,48 @@ class GameConsumer(AsyncWebsocketConsumer):
         print(f"🎲 Starting Round with {player_count} players. Roles: {[r.name for r in selected_roles]}")
         print(f"👮 Has Police: {has_police}, 🦹 Has Thief: {has_thief}")
         
-        random.shuffle(players)
-        random.shuffle(selected_roles)
+        # --- SMART SHUFFLE LOGIC ---
+        # Get last round's roles to avoid immediate repeats
+        last_round = room.rounds.filter(status__in=['COMPLETED', 'ABANDONED']).order_by('-id').first()
+        last_police_id = last_round.police_player.id if last_round and last_round.police_player else None
+        last_thief_id = last_round.thief_player.id if last_round and last_round.thief_player else None
+        
+        max_retries = 5
+        for attempt in range(max_retries):
+            random.shuffle(players)
+            random.shuffle(selected_roles)
+            
+            # If it's the first round or we ran out of retries, accept it
+            if not last_police_id and not last_thief_id:
+                break
+            if attempt == max_retries - 1:
+                print("⚠️ Smart Shuffle: Max retries reached, accepting shuffle.")
+                break
+                
+            # Check assignments
+            # Find who got Police and Thief in this proposed shuffle
+            # players[i] gets selected_roles[i]
+            
+            proposed_police = None
+            proposed_thief = None
+            
+            for i in range(len(players)):
+                if selected_roles[i].is_police:
+                    proposed_police = players[i]
+                elif selected_roles[i].is_thief:
+                    proposed_thief = players[i]
+            
+            # Check for repeats
+            repeat_police = (proposed_police and proposed_police.id == last_police_id)
+            repeat_thief = (proposed_thief and proposed_thief.id == last_thief_id)
+            
+            if repeat_police or repeat_thief:
+                print(f"🔄 Smart Shuffle: Retry {attempt+1}/{max_retries} (Police Repeat: {repeat_police}, Thief Repeat: {repeat_thief})")
+                continue
+            else:
+                print("✅ Smart Shuffle: Good distribution found.")
+                break
+        # ---------------------------
         
         round_obj = Round.objects.create(
             room=room,

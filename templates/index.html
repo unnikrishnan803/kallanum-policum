@@ -1,31 +1,97 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<h1>Kallanum Policum</h1>
-<p>The Ultimate Bluffing Game</p>
 
-{% if error %}
-<div style="color: #ff6b6b; margin-bottom: 10px;">{{ error }}</div>
-{% endif %}
 
-<div style="background: #2a2a2a; padding: 20px; border-radius: 20px; margin-bottom: 20px;">
-    <h3>Create Room</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="create">
-        <input type="text" name="name" placeholder="Your Name" required>
-        <button type="submit" class="btn">Create New Game</button>
-    </form>
+<div class="container" style="text-align: center; justify-content: center; height: 100vh;">
+    
+    <!-- Hero Section -->
+    <div class="fade-in-up">
+        <h1 style="margin-bottom: 10px; font-size: 4rem;">🕵️ Kallanum Policum</h1>
+        <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 50px; letter-spacing: 1px;">
+            The Ultimate Social Deduction Game
+        </p>
+    </div>
+
+    <!-- Action Cards -->
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+        
+        <!-- Create Room Card -->
+        <div class="glass-card fade-in-up delay-1" style="flex: 1; min-width: 300px; max-width: 400px; text-align: left;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🎮</div>
+            <h2 style="color: var(--primary-color); margin-bottom: 10px;">Create Room</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Host a new game and invite your friends to play.</p>
+            <button class="btn btn-primary" onclick="createRoom()" style="width: 100%;">
+                Start New Game
+            </button>
+        </div>
+
+        <!-- Join Room Card -->
+        <div class="glass-card fade-in-up delay-2" style="flex: 1; min-width: 300px; max-width: 400px; text-align: left;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🚀</div>
+            <h2 style="color: var(--accent-color); margin-bottom: 10px;">Join Room</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Enter a room code to join an existing game.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="room-code-input" placeholder="Enter Code (e.g. ABCD12)" style="text-transform: uppercase;">
+                <button class="btn" onclick="joinRoom()" style="padding: 15px 25px; border-color: var(--accent-color); color: var(--accent-color);">
+                    Join
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="fade-in-up delay-3" style="margin-top: 50px; color: var(--text-muted); font-size: 0.9rem;">
+        <p>© 2025 Kallanum Policum • Designed for Fun</p>
+    </div>
+
 </div>
 
-<div style="background: #2a2a2a; padding: 20px; border-radius: 20px;">
-    <h3>Join Room</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="join">
-        <input type="text" name="name" placeholder="Your Name" required>
-        <input type="text" name="room_code" placeholder="Room Code (e.g. ABCD)" required style="text-transform: uppercase;">
-        <button type="submit" class="btn" style="background: linear-gradient(45deg, #4facfe, #00f2fe);">Join Game</button>
-    </form>
-</div>
+<script>
+    function createRoom() {
+        const btn = document.querySelector('.btn-primary');
+        btn.innerHTML = 'Creating...';
+        btn.style.opacity = '0.7';
+        
+        fetch('/create-room/')
+            .then(response => response.json())
+            .then(data => {
+                window.location.href = '/room/' + data.room_code + '/';
+            });
+    }
+
+    function joinRoom() {
+        const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+        if (code) {
+            window.location.href = '/room/' + code + '/';
+        } else {
+            const input = document.getElementById('room-code-input');
+            input.style.borderColor = 'var(--secondary-color)';
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 500);
+        }
+    }
+
+    // Add enter key support
+    document.getElementById('room-code-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            joinRoom();
+        }
+    });
+</script>
+
+<style>
+    .shake {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+</style>
 {% endblock %}
