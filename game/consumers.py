@@ -623,17 +623,50 @@ class GameConsumer(AsyncWebsocketConsumer):
                 'role': participation.role_name
             })
             
-        scores = [
-            asyncio.create_task(self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'player_update',
-                    'players': players_list
-                }
-            ))
+        # Get updated scores
+        scores = []
+        for p in room.players.all():
+             scores.append({
+                 'name': p.name,
+                 'score': p.total_score,
+                 'avatar': p.avatar
+             })
+             
+        thief_name = round_obj.thief_player.name if round_obj.thief_player else "Unknown"
+        
+        return {
+            'winner': round_obj.winner,
+            'thief_name': thief_name,
+            'scores': scores,
+            'all_roles': all_roles_reveal
+        }
 
+    @database_sync_to_async
+    def remove_player_from_room(self, session_id):
+        try:
+            room = Room.objects.get(room_code=self.room_code)
+            player = room.players.filter(session_id=session_id).first()
+            if player:
+                print(f"👋 Removing player {player.name} from room")
+                player.delete()
+                return True
+            return False
         except Exception as e:
-            print(f"❌ Error handling disconnect: {e}")
+            print(f"Error removing player: {e}")
+            return False
+
+    async def handle_player_disconnect(self, session_id):
+        await self.remove_player_from_room(session_id)
+        
+        # Broadcast update
+        players = await self.get_players_in_room()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'player_update',
+                'players': players
+            }
+        )
 
     async def host_change(self, event):
         await self.send(text_data=json.dumps({
