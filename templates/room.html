@@ -50,40 +50,40 @@
     </div>
 
     <!-- SETTINGS MODAL -->
-    <div id="settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; backdrop-filter: blur(10px);">
-        <div class="glass-card fade-in-up" style="width: 90%; max-width: 500px; margin: 50px auto; border: 1px solid var(--primary-color); position: relative; display: flex; flex-direction: column; max-height: 90vh;">
-            <button onclick="closeSettings()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">✕</button>
+    <div id="settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        <div class="glass-card fade-in-up" style="width: 90%; max-width: 500px; margin: 20px auto; border: 1px solid var(--primary-color); position: relative; display: flex; flex-direction: column; max-height: calc(100vh - 40px); background: rgba(30, 30, 30, 0.98);">
+            <button onclick="closeSettings()" style="position: absolute; top: 15px; right: 15px; background: rgba(255,107,107,0.2); border: 1px solid var(--primary-color); font-size: 1.5rem; cursor: pointer; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10;">✕</button>
             
-            <h2 style="margin-bottom: 20px; color: var(--primary-color); text-align: center;">⚙️ Game Settings</h2>
+            <h2 style="margin-bottom: 20px; color: var(--primary-color); text-align: center; padding-right: 40px;">⚙️ Game Settings</h2>
             
-            <div style="flex: 1; overflow-y: auto; padding: 5px;">
+            <div style="flex: 1; overflow-y: auto; padding: 5px 10px; -webkit-overflow-scrolling: touch;">
                 <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 10px; color: var(--text-muted); font-weight: 600;">Max Rounds</label>
-                    <input type="number" id="setting-max-rounds" value="5" min="1" max="20" style="font-size: 1.2rem; font-weight: bold; text-align: center;">
+                    <label style="display: block; margin-bottom: 10px; color: #fff; font-weight: 600; font-size: 1rem;">Max Rounds</label>
+                    <input type="number" id="setting-max-rounds" value="5" min="1" max="20" style="font-size: 1.2rem; font-weight: bold; text-align: center; width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px;">
                 </div>
                 
                 <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 10px; color: var(--text-muted); font-weight: 600;">⏱️ Round Timer (seconds)</label>
+                    <label style="display: block; margin-bottom: 10px; color: #fff; font-weight: 600; font-size: 1rem;">⏱️ Round Timer</label>
                     <input type="range" id="setting-timer-duration" min="60" max="300" value="60" step="30" 
-                           style="width: 100%; margin-bottom: 10px;" 
+                           style="width: 100%; margin-bottom: 10px; height: 40px; -webkit-appearance: none; background: transparent;" 
                            oninput="document.getElementById('timer-value-display').textContent = this.value + 's'">
-                    <div style="text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--primary-color);" id="timer-value-display">60s</div>
-                    <div style="display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.85rem; margin-top: 5px;">
+                    <div style="text-align: center; font-size: 2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 10px;" id="timer-value-display">60s</div>
+                    <div style="display: flex; justify-content: space-between; color: #fff; font-size: 0.9rem; margin-top: 5px;">
                         <span>1 min</span>
                         <span>5 min</span>
                     </div>
                 </div>
                 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 15px; color: var(--text-muted); font-weight: 600;">Role Points</label>
+                    <label style="display: block; margin-bottom: 15px; color: #fff; font-weight: 600; font-size: 1rem;">Role Points</label>
                     <div id="roles-settings-container">
                         <!-- Dynamic roles inputs will be here -->
                     </div>
                 </div>
             </div>
             
-            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--glass-border);">
-                <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%;">Save Changes</button>
+            <div style="margin-top: 20px; padding: 15px 10px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.3);">
+                <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%; font-size: 1.1rem; padding: 15px;">💾 Save Changes</button>
             </div>
         </div>
     </div>
