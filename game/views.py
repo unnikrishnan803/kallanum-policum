@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from .models import Room, Player
 import uuid
+import random
+from django.db import IntegrityError
 
 def index(request):
     if request.method == "POST":
@@ -22,32 +24,42 @@ def index(request):
             try:
                 room = Room.objects.get(room_code=room_code)
                 
-                # Try to join
+                # Check if player already exists
                 try:
-                    from django.db import IntegrityError
-                    player, created = Player.objects.get_or_create(
-                        room=room, session_id=session_id,
-                        defaults={'name': name}
-                    )
-                except IntegrityError:
-                    # Name already taken by another session
-                    import random
-                    suffix = random.randint(1000, 9999)
-                    new_name = f"{name} #{suffix}"
-                    player, created = Player.objects.get_or_create(
-                        room=room, session_id=session_id,
-                        defaults={'name': new_name}
-                    )
-                
-                if not created and player.name != name:
-                    # If we are renaming ourselves back to original or something else
-                    # We need to check if that name is taken
-                    try:
-                        player.name = name
-                        player.save()
-                    except IntegrityError:
-                        # Keep old name or generate new one if needed
-                        pass
+                    player = Player.objects.get(room=room, session_id=session_id)
+                    # Player exists, update name if needed
+                    if player.name != name:
+                        try:
+                            player.name = name
+                            player.save()
+                        except IntegrityError:
+                            # Name taken, try suffixes
+                            for _ in range(5):
+                                try:
+                                    suffix = random.randint(1000, 9999)
+                                    player.name = f"{name} #{suffix}"
+                                    player.save()
+                                    break
+                                except IntegrityError:
+                                    continue
+                except Player.DoesNotExist:
+                    # Create new player
+                    target_name = name
+                    player = None
+                    for _ in range(10): # Try 10 times
+                        try:
+                            player = Player.objects.create(
+                                room=room, 
+                                session_id=session_id,
+                                name=target_name
+                            )
+                            break
+                        except IntegrityError:
+                            suffix = random.randint(1000, 9999)
+                            target_name = f"{name} #{suffix}"
+                    
+                    if not player:
+                         return render(request, 'index.html', {'error': 'Unable to join: Name collision. Please try again.'})
 
                 return redirect('room', room_code=room.room_code)
             except Room.DoesNotExist:
