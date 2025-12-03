@@ -9,6 +9,8 @@ from .models import Room, Player, GameRole, Round, RoundParticipation
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        # Accept immediately to establish connection
+        await self.accept()
         try:
             self.room_code = self.scope['url_route']['kwargs']['room_code']
             self.room_group_name = f'room_{self.room_code}'
@@ -20,12 +22,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 self.channel_name
             )
-            await self.accept()
-            print(f"✅ Connected to {self.room_group_name}")
             
-            # AI Watchdog removed as per user request
-            # was_stuck = await self.check_stuck_rounds()
-            # if was_stuck: ...
+            print(f"✅ Connected to {self.room_group_name}")
             
             # Send current player list to all connected clients
             players = await self.get_players_in_room()
@@ -41,23 +39,36 @@ class GameConsumer(AsyncWebsocketConsumer):
             print(f"❌ Error in connect: {str(e)}")
             import traceback
             traceback.print_exc()
+            # Send error to client
+            try:
+                await self.send(text_data=json.dumps({
+                    'action': 'error',
+                    'message': f'Connection failed: {str(e)}'
+                }))
+            except:
+                pass
             await self.close()
 
     async def disconnect(self, close_code):
         try:
-            print(f"🔌 Disconnecting from {self.room_group_name} (Code: {close_code})")
-            
-            # Handle Player Disconnect Logic
-            await self.handle_player_disconnect(self.scope['session'].session_key)
-            
-            if self.timer_task:
-                self.timer_task.cancel()
+            if hasattr(self, 'room_group_name'):
+                print(f"🔌 Disconnecting from {self.room_group_name} (Code: {close_code})")
                 
-            await self.channel_layer.group_discard(
-                self.room_group_name,
-                self.channel_name
-            )
+                # Handle Player Disconnect Logic
+                if 'session' in self.scope and self.scope['session'].session_key:
+                    await self.handle_player_disconnect(self.scope['session'].session_key)
+                
+                if self.timer_task:
+                    self.timer_task.cancel()
+                    
+                await self.channel_layer.group_discard(
+                    self.room_group_name,
+                    self.channel_name
+                )
+            else:
+                print(f"🔌 Disconnecting (Code: {close_code}) - No room group")
         except Exception as e:
+            print(f"❌ Error in disconnect: {e}")
             print(f"❌ Error in disconnect: {str(e)}")
             import traceback
             traceback.print_exc()
