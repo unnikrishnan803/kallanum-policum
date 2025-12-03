@@ -177,6 +177,16 @@
             </table>
         </div>
         
+        <!-- AI INSIGHTS PANEL -->
+        <div class="glass-card" style="margin: 0 auto 40px auto; max-width: 600px; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,107,107,0.1));">
+            <h3 style="border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; margin-bottom: 15px;">
+                🤖 AI Analysis
+            </h3>
+            <div id="ai-insights" style="text-align: left;">
+                <!-- AI insights will be added here -->
+            </div>
+        </div>
+        
         {% if is_host %}
         <button class="btn btn-primary" onclick="nextRound()">▶ Next Round</button>
         {% else %}
@@ -608,6 +618,70 @@
                 </tr>
             `;
         });
+        
+        // Generate AI Insights
+        generateAIInsights(scores, winner, thiefName);
+    }
+    
+    function generateAIInsights(scores, winner, thiefName) {
+        const insightsDiv = document.getElementById('ai-insights');
+        if (!insightsDiv) return;
+        
+        let insights = '';
+        
+        // MVP Analysis
+        const mvp = scores[0];
+        const mvpEmoji = mvp.score > 150 ? '🌟' : '⭐';
+        insights += `<div style="padding: 12px; margin-bottom: 10px; background: rgba(255,215,0,0.1); border-left: 3px solid #FFD700; border-radius: 5px;">
+            ${mvpEmoji} <strong>MVP:</strong> ${mvp.name} with ${mvp.score} points!
+        </div>`;
+        
+        // Performance Analysis
+        if (scores.length >= 2) {
+            const gap = scores[0].score - scores[1].score;
+            if (gap > 50) {
+                insights += `<div style="padding: 12px; margin-bottom: 10px; background: rgba(46,213,115,0.1); border-left: 3px solid #2ed573; border-radius: 5px;">
+                    🚀 <strong>Dominant Performance:</strong> ${mvp.name} is leading by ${gap} points!
+                </div>`;
+            } else if (gap < 20) {
+                insights += `<div style="padding: 12px; margin-bottom: 10px; background: rgba(255,107,107,0.1); border-left: 3px solid #ff6b6b; border-radius: 5px;">
+                    🔥 <strong>Close Race:</strong> Top 2 players are separated by only ${gap} points!
+                </div>`;
+            }
+        }
+        
+        // Winner Analysis
+        if (winner === 'POLICE') {
+            insights += `<div style="padding: 12px; margin-bottom: 10px; background: rgba(52,152,219,0.1); border-left: 3px solid #3498db; border-radius: 5px;">
+                👮 <strong>Justice Served:</strong> The police successfully caught ${thiefName}. Great detective work!
+            </div>`;
+        } else {
+            insights += `<div style="padding: 12px; margin-bottom: 10px; background: rgba(155,89,182,0.1); border-left: 3px solid #9b59b6; border-radius: 5px;">
+                🎭 <strong>Master Escape:</strong> ${thiefName} evaded capture! The thief wins this round.
+            </div>`;
+        }
+        
+        // Trend Analysis
+        const lastPlayer = scores[scores.length - 1];
+        if (lastPlayer.score < 50) {
+            insights += `<div style="padding: 12px; margin-bottom: 10px; background: rgba(255,159,64,0.1); border-left: 3px solid #ff9f40; border-radius: 5px;">
+                💡 <strong>Tip for ${lastPlayer.name}:</strong> Try to be more strategic in the next round!
+            </div>`;
+        }
+        
+        // Random Motivational Insight
+        const motivations = [
+            "🎯 <strong>Next Round Prediction:</strong> The competition is heating up!",
+            "🧠 <strong>Strategy Tip:</strong> Watch player behavior patterns for clues.",
+            "⚡ <strong>Fun Fact:</strong> Quick decisions often lead to better outcomes!",
+            "🎲 <strong>Remember:</strong> Every player has a chance to win!"
+        ];
+        const randomMotivation = motivations[Math.floor(Math.random() * motivations.length)];
+        insights += `<div style="padding: 12px; background: rgba(108,92,231,0.1); border-left: 3px solid #6c5ce7; border-radius: 5px;">
+            ${randomMotivation}
+        </div>`;
+        
+        insightsDiv.innerHTML = insights;
     }
 
     function nextRound() {
