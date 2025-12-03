@@ -90,9 +90,10 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             elif action == 'update_settings':
                 max_rounds = int(data.get('max_rounds', 5))
+                timer_duration = int(data.get('timer_duration', 60))
                 roles_data = data.get('roles', [])
                 
-                await self.update_game_settings_advanced(max_rounds, roles_data)
+                await self.update_game_settings_advanced(max_rounds, timer_duration, roles_data)
                 
                 # Confirm save
                 await self.send(text_data=json.dumps({
@@ -416,14 +417,16 @@ class GameConsumer(AsyncWebsocketConsumer):
             
         return {
             'max_rounds': room.max_rounds,
+            'timer_duration': room.timer_duration,
             'roles': roles_data
         }
 
     @database_sync_to_async
-    def update_game_settings_advanced(self, max_rounds, roles_data):
+    def update_game_settings_advanced(self, max_rounds, timer_duration, roles_data):
         # Update Room
         room = Room.objects.get(room_code=self.room_code)
         room.max_rounds = max_rounds
+        room.timer_duration = timer_duration
         room.save()
         
         # Update Roles
