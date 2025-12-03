@@ -448,6 +448,18 @@ class GameConsumer(AsyncWebsocketConsumer):
         room = Room.objects.get(room_code=self.room_code)
         room.status = 'FINISHED'
         room.save()
+        
+        # Get all players and their total scores
+        players = room.players.all().order_by('-total_score')
+        
+        scores = []
+        for player in players:
+            scores.append({
+                'name': player.name,
+                'score': player.total_score
+            })
+        
+        return scores
     @database_sync_to_async
     def verify_police(self, session_id):
         room = Room.objects.get(room_code=self.room_code)
