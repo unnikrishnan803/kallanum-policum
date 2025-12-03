@@ -307,7 +307,7 @@
                 }
             }
             else if (data.action === 'round_ended') {
-                showResult(data);
+                showResult(data.winner, data.thief_name, data.scores);
             }
             else if (data.action === 'game_over') {
                 showPodium(data.scores);
