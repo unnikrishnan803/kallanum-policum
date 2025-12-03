@@ -50,40 +50,40 @@
     </div>
 
     <!-- SETTINGS MODAL -->
-    <div id="settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; -webkit-overflow-scrolling: touch;">
-        <div class="glass-card fade-in-up" style="width: 90%; max-width: 500px; margin: 20px auto; border: 1px solid var(--primary-color); position: relative; display: flex; flex-direction: column; max-height: calc(100vh - 40px); background: rgba(30, 30, 30, 0.98);">
-            <button onclick="closeSettings()" style="position: absolute; top: 15px; right: 15px; background: rgba(255,107,107,0.2); border: 1px solid var(--primary-color); font-size: 1.5rem; cursor: pointer; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10;">✕</button>
+    <div id="settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(20,0,40,0.95)); z-index: 1000; overflow-y: auto; -webkit-overflow-scrolling: touch; backdrop-filter: blur(5px);">
+        <div class="glass-card fade-in-up" style="width: 90%; max-width: 500px; margin: 20px auto; border: 2px solid #00ffff; position: relative; display: flex; flex-direction: column; max-height: calc(100vh - 40px); background: linear-gradient(135deg, rgba(10,0,30,0.98), rgba(30,0,60,0.98)); box-shadow: 0 0 30px rgba(0,255,255,0.5), inset 0 0 20px rgba(0,255,255,0.1);">
+            <button onclick="closeSettings()" style="position: absolute; top: 15px; right: 15px; background: linear-gradient(135deg, #ff006e, #8338ec); border: 2px solid #00ffff; font-size: 1.5rem; cursor: pointer; color: #fff; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 15px rgba(255,0,110,0.6); transition: all 0.3s;">✕</button>
             
-            <h2 style="margin-bottom: 20px; color: var(--primary-color); text-align: center; padding-right: 40px;">⚙️ Game Settings</h2>
+            <h2 style="margin-bottom: 25px; background: linear-gradient(90deg, #00ffff, #ff006e, #8338ec); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-align: center; padding-right: 40px; font-size: 1.8rem; text-shadow: 0 0 20px rgba(0,255,255,0.5);">⚙️ GAME SETTINGS</h2>
             
-            <div style="flex: 1; overflow-y: auto; padding: 5px 10px; -webkit-overflow-scrolling: touch;">
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 10px; color: #fff; font-weight: 600; font-size: 1rem;">Max Rounds</label>
-                    <input type="number" id="setting-max-rounds" value="5" min="1" max="20" style="font-size: 1.2rem; font-weight: bold; text-align: center; width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px;">
+            <div style="flex: 1; overflow-y: auto; padding: 10px 15px; -webkit-overflow-scrolling: touch;">
+                <div style="margin-bottom: 30px; padding: 15px; background: rgba(0,255,255,0.05); border-left: 3px solid #00ffff; border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 12px; color: #00ffff; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(0,255,255,0.5);">Max Rounds</label>
+                    <input type="number" id="setting-max-rounds" value="5" min="1" max="20" style="font-size: 1.3rem; font-weight: bold; text-align: center; width: 100%; padding: 14px; background: rgba(0,0,0,0.5); border: 2px solid #8338ec; color: #00ffff; border-radius: 10px; box-shadow: 0 0 15px rgba(131,56,236,0.3), inset 0 0 10px rgba(0,255,255,0.1);">
                 </div>
                 
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 10px; color: #fff; font-weight: 600; font-size: 1rem;">⏱️ Round Timer</label>
+                <div style="margin-bottom: 30px; padding: 15px; background: rgba(255,0,110,0.05); border-left: 3px solid #ff006e; border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 12px; color: #ff006e; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(255,0,110,0.5);">⏱️ Round Timer</label>
                     <input type="range" id="setting-timer-duration" min="60" max="300" value="60" step="30" 
-                           style="width: 100%; margin-bottom: 10px; height: 40px; -webkit-appearance: none; background: transparent;" 
+                           style="width: 100%; margin-bottom: 15px; height: 8px; -webkit-appearance: none; background: linear-gradient(90deg, #00ffff, #ff006e); border-radius: 10px; outline: none; box-shadow: 0 0 10px rgba(0,255,255,0.5);" 
                            oninput="document.getElementById('timer-value-display').textContent = this.value + 's'">
-                    <div style="text-align: center; font-size: 2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 10px;" id="timer-value-display">60s</div>
-                    <div style="display: flex; justify-content: space-between; color: #fff; font-size: 0.9rem; margin-top: 5px;">
-                        <span>1 min</span>
-                        <span>5 min</span>
+                    <div style="text-align: center; font-size: 2.5rem; font-weight: bold; background: linear-gradient(90deg, #00ffff, #ff006e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; text-shadow: 0 0 20px rgba(0,255,255,0.8);" id="timer-value-display">60s</div>
+                    <div style="display: flex; justify-content: space-between; color: #8338ec; font-size: 1rem; margin-top: 8px; font-weight: 600;">
+                        <span style="text-shadow: 0 0 5px rgba(131,56,236,0.5);">1 min</span>
+                        <span style="text-shadow: 0 0 5px rgba(131,56,236,0.5);">5 min</span>
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 15px; color: #fff; font-weight: 600; font-size: 1rem;">Role Points</label>
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(131,56,236,0.05); border-left: 3px solid #8338ec; border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 15px; color: #8338ec; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(131,56,236,0.5);">Role Points</label>
                     <div id="roles-settings-container">
                         <!-- Dynamic roles inputs will be here -->
                     </div>
                 </div>
             </div>
             
-            <div style="margin-top: 20px; padding: 15px 10px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.3);">
-                <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%; font-size: 1.1rem; padding: 15px;">💾 Save Changes</button>
+            <div style="margin-top: 20px; padding: 15px; border-top: 2px solid #00ffff; background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(255,0,110,0.1)); box-shadow: 0 -5px 20px rgba(0,255,255,0.2);">
+                <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%; font-size: 1.2rem; padding: 16px; background: linear-gradient(135deg, #00ffff, #8338ec, #ff006e); border: none; box-shadow: 0 0 25px rgba(0,255,255,0.6); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">💾 SAVE CHANGES</button>
             </div>
         </div>
     </div>
