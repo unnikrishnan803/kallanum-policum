@@ -24,7 +24,7 @@
 
         {% if is_host %}
         <div style="text-align: center; margin-bottom: 40px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="startGame()">▶ Start Game</button>
+            <button class="btn btn-primary" onclick="startGame(this)">▶ Start Game</button>
             <button class="btn" onclick="openSettings()">⚙️ Settings</button>
         </div>
         {% else %}
@@ -359,8 +359,17 @@
         if(statusDiv) statusDiv.innerHTML = '<div style="font-size: 2rem; margin-bottom: 10px; animation: pulseGlow 2s infinite;">⏳</div> Starting next round...';
     }
 
-    function startGame() {
+    }
+    
+    function startGame(btn) {
         console.log('🎮 Host starting game...');
+        if(btn) {
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Starting...';
+            btn.style.opacity = '0.7';
+            btn.style.cursor = 'not-allowed';
+        }
+        
         chatSocket.send(JSON.stringify({
             'action': 'start_game',
             'message': 'Host started the game'

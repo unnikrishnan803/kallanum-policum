@@ -123,8 +123,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 )
         
             elif action == 'start_game':
-                # Remove any existing bots first
-                await self.remove_bots()
+                # Remove any existing bots first - REMOVED for performance
+                # await self.remove_bots()
                 
                 # Broadcast updated player list (without bots)
                 players = await self.get_players_in_room()
