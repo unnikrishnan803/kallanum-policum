@@ -450,14 +450,26 @@ class GameConsumer(AsyncWebsocketConsumer):
         players = list(room.players.all())
         all_roles_qs = list(GameRole.objects.all())
         
-        # Auto-create roles if missing (First run on Render)
-        if not all_roles_qs:
-            print("⚠️ No roles found! Creating default roles...")
-            police = GameRole.objects.create(name="Police", is_police=True, win_points=100)
-            thief = GameRole.objects.create(name="Thief", is_thief=True, win_points=100)
-            civilian = GameRole.objects.create(name="Civilian", win_points=50)
-            all_roles_qs = [police, thief, civilian]
-            print("✅ Default roles created.")
+        # Robust Role Check & Creation
+        has_police_role = any(r.is_police for r in all_roles_qs)
+        has_thief_role = any(r.is_thief for r in all_roles_qs)
+        
+        if not has_police_role or not has_thief_role:
+            print("⚠️ Critical Roles Missing! Creating defaults...")
+            if not has_police_role:
+                GameRole.objects.create(name="Police", is_police=True, win_points=100)
+            if not has_thief_role:
+                GameRole.objects.create(name="Thief", is_thief=True, win_points=100)
+            
+            # Ensure at least one civilian exists too
+            if not any(not r.is_police and not r.is_thief for r in all_roles_qs):
+                 GameRole.objects.create(name="Civilian", win_points=50)
+                 
+            # Refresh list
+            all_roles_qs = list(GameRole.objects.all())
+            print("✅ Roles repaired.")
+        
+        # Select roles: Must have Police and Thief
         
         # Select roles: Must have Police and Thief
         police_role = next(r for r in all_roles_qs if r.is_police)
