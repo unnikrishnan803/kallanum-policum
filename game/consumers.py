@@ -302,7 +302,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def send_role_to_player(self, event):
         await self.send(text_data=json.dumps({
-            'action': 'role_assigned',
+            'action': 'send_role_to_player',
             'target_session_id': event['target_session_id'],
             'role': event['role'],
             'description': event['description'],
