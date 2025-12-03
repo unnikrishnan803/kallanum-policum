@@ -250,12 +250,24 @@
 
     function connectWebSocket() {
         console.log("🔌 Connecting...");
+        // alert("Debug: connectWebSocket called"); // Uncomment if needed
+        
+        if (!roomCode) {
+            alert("CRITICAL ERROR: Room code is missing!");
+            return;
+        }
+
         const status = document.getElementById('connection-status');
         if (status) status.innerHTML = '<span style="color: #f1c40f;">⏳ Connecting...</span>';
 
-        chatSocket = new WebSocket(
-            protocol + window.location.host + '/ws/room/' + roomCode + '/'
-        );
+        try {
+            chatSocket = new WebSocket(
+                protocol + window.location.host + '/ws/room/' + roomCode + '/'
+            );
+        } catch (e) {
+            alert("WebSocket Creation Error: " + e);
+            return;
+        }
 
         chatSocket.onopen = function(e) {
             console.log('✅ Connected');
@@ -359,7 +371,7 @@
         if(statusDiv) statusDiv.innerHTML = '<div style="font-size: 2rem; margin-bottom: 10px; animation: pulseGlow 2s infinite;">⏳</div> Starting next round...';
     }
 
-    }
+
     
     function startGame(btn) {
         console.log('🎮 Host starting game...');
@@ -644,5 +656,9 @@
             }
         });
     }
+
+
+    // Initialize WebSocket connection
+    connectWebSocket();
 </script>
 {% endblock %}
