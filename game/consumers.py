@@ -289,10 +289,15 @@ class GameConsumer(AsyncWebsocketConsumer):
             traceback.print_exc()
 
     async def run_timer(self, round_id):
-        """Timer loop that runs for 60 seconds"""
+        """Timer loop that runs based on room settings"""
         print(f"⏰ Timer STARTED for Round {round_id}")
+        
+        # Get timer duration from room settings
+        timer_duration = await self.get_timer_duration()
+        print(f"⏰ Timer duration: {timer_duration} seconds")
+        
         try:
-            for i in range(60, -1, -1):
+            for i in range(timer_duration, -1, -1):
                 # Check if round is still playing
                 status = await self.get_round_status(round_id)
                 
@@ -394,6 +399,11 @@ class GameConsumer(AsyncWebsocketConsumer):
     def get_player_count(self):
         room = Room.objects.get(room_code=self.room_code)
         return room.players.count()
+    
+    @database_sync_to_async
+    def get_timer_duration(self):
+        room = Room.objects.get(room_code=self.room_code)
+        return room.timer_duration
 
     @database_sync_to_async
     def remove_bots(self):
