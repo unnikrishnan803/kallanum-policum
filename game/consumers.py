@@ -731,9 +731,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                 'role': participation.role_name
             })
             
-        # Get updated scores
+        # Get updated scores (sorted by score descending)
         scores = []
-        for p in room.players.all():
+        for p in room.players.all().order_by('-total_score'):
              scores.append({
                  'name': p.name,
                  'score': p.total_score,
