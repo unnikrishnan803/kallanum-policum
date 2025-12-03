@@ -21,14 +21,34 @@ def index(request):
             room_code = request.POST.get('room_code').upper()
             try:
                 room = Room.objects.get(room_code=room_code)
-                # Check if player already exists with this session
-                player, created = Player.objects.get_or_create(
-                    room=room, session_id=session_id,
-                    defaults={'name': name}
-                )
+                
+                # Try to join
+                try:
+                    from django.db import IntegrityError
+                    player, created = Player.objects.get_or_create(
+                        room=room, session_id=session_id,
+                        defaults={'name': name}
+                    )
+                except IntegrityError:
+                    # Name already taken by another session
+                    import random
+                    suffix = random.randint(1000, 9999)
+                    new_name = f"{name} #{suffix}"
+                    player, created = Player.objects.get_or_create(
+                        room=room, session_id=session_id,
+                        defaults={'name': new_name}
+                    )
+                
                 if not created and player.name != name:
-                    player.name = name
-                    player.save()
+                    # If we are renaming ourselves back to original or something else
+                    # We need to check if that name is taken
+                    try:
+                        player.name = name
+                        player.save()
+                    except IntegrityError:
+                        # Keep old name or generate new one if needed
+                        pass
+
                 return redirect('room', room_code=room.room_code)
             except Room.DoesNotExist:
                 return render(request, 'index.html', {'error': 'Room not found'})

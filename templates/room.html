@@ -305,6 +305,13 @@
             else if (data.action === 'error') {
                 alert("⚠️ Error: " + data.message);
             }
+            else if (data.action === 'settings_data') {
+                populateSettingsModal(data.settings);
+            }
+            else if (data.action === 'settings_saved') {
+                alert("✅ " + data.message);
+                closeSettings();
+            }
         };
 
         chatSocket.onclose = function(e) {
