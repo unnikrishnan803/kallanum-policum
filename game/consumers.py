@@ -122,6 +122,45 @@ class GameConsumer(AsyncWebsocketConsumer):
                             'type': 'reset_round'
                         }
                     )
+                    
+                    # Start the next round
+                    player_count = await self.get_player_count()
+                    print(f"🚀 Starting next round with {player_count} players...")
+                    
+                    try:
+                        game_data = await self.start_new_round(player_count)
+                        print(f"✅ Next round started. Round ID: {game_data.get('round_id')}")
+                        
+                        # Start Timer Task
+                        if self.timer_task:
+                            self.timer_task.cancel()
+                        self.timer_task = asyncio.create_task(self.run_timer(game_data['round_id']))
+                        
+                        # Send roles
+                        for player_data in game_data['players']:
+                            message = {
+                                'type': 'send_role_to_player',
+                                'target_session_id': player_data['session_id'],
+                                'role': player_data['role'],
+                                'description': player_data['description'],
+                                'points': player_data['points'],
+                                'is_police': player_data['is_police'],
+                                'is_thief': player_data['is_thief'],
+                                'all_players': game_data['all_players'] if player_data['is_police'] else None
+                            }
+                            
+                            await self.channel_layer.group_send(
+                                self.room_group_name,
+                                message
+                            )
+                    except Exception as e:
+                        print(f"❌ Error starting next round: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        await self.send(text_data=json.dumps({
+                            'action': 'error',
+                            'message': f'Failed to start next round: {str(e)}'
+                        }))
 
             elif action == 'join':
                 players = await self.get_players_in_room()
