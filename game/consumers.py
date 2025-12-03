@@ -476,6 +476,12 @@ class GameConsumer(AsyncWebsocketConsumer):
         thief_role = next(r for r in all_roles_qs if r.is_thief)
         other_roles = [r for r in all_roles_qs if not r.is_police and not r.is_thief]
         
+        # CRITICAL FIX: Ensure other_roles is not empty (need at least one Civilian)
+        if not other_roles:
+            print("⚠️ No Civilian role found! Creating one...")
+            civilian = GameRole.objects.create(name="Civilian", win_points=50)
+            other_roles = [civilian]
+        
         random.shuffle(other_roles)
         
         # We need (player_count - 2) other roles
