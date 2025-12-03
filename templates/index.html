@@ -7,27 +7,27 @@
 <div class="container" style="text-align: center; justify-content: center; height: 100vh;">
     
     <!-- Hero Section -->
-    <div class="fade-in-up">
-        <h1 style="margin-bottom: 10px; font-size: 4rem;">🕵️ Kallanum Policum</h1>
-        <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 50px; letter-spacing: 1px;">
+    <div class="fade-in-up hero-section">
+        <h1 class="hero-title">🕵️ Kallanum Policum</h1>
+        <p class="hero-subtitle">
             The Ultimate Social Deduction Game
         </p>
     </div>
 
     <!-- Action Cards -->
-    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+    <div class="action-cards-container">
         
         <!-- Create Room Card -->
-        <div class="glass-card fade-in-up delay-1" style="flex: 1; min-width: 300px; max-width: 400px; text-align: left;">
-            <div style="font-size: 3rem; margin-bottom: 20px;">🎮</div>
-            <h2 style="color: var(--primary-color); margin-bottom: 10px;">Create Room</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Host a new game.</p>
+        <div class="glass-card fade-in-up delay-1 action-card">
+            <div class="card-icon">🎮</div>
+            <h2 class="card-title" style="color: var(--primary-color);">Create Room</h2>
+            <p class="card-desc">Host a new game.</p>
             
             <form method="POST" action="/">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="create">
-                <div style="margin-bottom: 15px;">
-                    <input type="text" name="name" placeholder="Your Name" required style="background: #F5F5F5; border: none; padding: 15px; border-radius: 12px; width: 100%;">
+                <div class="input-group">
+                    <input type="text" name="name" placeholder="Your Name" required class="input-styled">
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Start New Game
@@ -36,21 +36,21 @@
         </div>
 
         <!-- Join Room Card -->
-        <div class="glass-card fade-in-up delay-2" style="flex: 1; min-width: 300px; max-width: 400px; text-align: left;">
-            <div style="font-size: 3rem; margin-bottom: 20px;">🚀</div>
-            <h2 style="color: var(--accent-color); margin-bottom: 10px;">Join Room</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Join an existing game.</p>
+        <div class="glass-card fade-in-up delay-2 action-card">
+            <div class="card-icon">🚀</div>
+            <h2 class="card-title" style="color: var(--accent-color);">Join Room</h2>
+            <p class="card-desc">Join an existing game.</p>
             
             <form method="POST" action="/">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="join">
-                <div style="margin-bottom: 15px;">
-                    <input type="text" name="name" placeholder="Your Name" required style="background: #F5F5F5; border: none; padding: 15px; border-radius: 12px; width: 100%;">
+                <div class="input-group">
+                    <input type="text" name="name" placeholder="Your Name" required class="input-styled">
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <input type="text" name="room_code" placeholder="Room Code" required style="text-transform: uppercase; background: #F5F5F5; border: none; padding: 15px; border-radius: 12px; width: 100%;">
+                <div class="input-group">
+                    <input type="text" name="room_code" placeholder="Room Code" required class="input-styled" style="text-transform: uppercase;">
                 </div>
-                <button type="submit" class="btn" style="width: 100%; padding: 15px 25px; border-color: var(--accent-color); color: var(--accent-color); background: transparent; border: 2px solid var(--accent-color);">
+                <button type="submit" class="btn btn-outline">
                     Join
                 </button>
             </form>

@@ -153,8 +153,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                      return
 
                 # Check max rounds
+                print(f"🔄 Checking max rounds for Room {self.room_code}...")
                 can_start = await self.check_max_rounds()
+                print(f"🔄 Check Max Rounds Result: {can_start}")
+                
                 if not can_start:
+                    print("🏁 Max rounds reached (in start_game). Ending game.")
                     # GAME OVER LOGIC
                     final_scores = await self.get_final_scores()
                     await self.channel_layer.group_send(
@@ -166,7 +170,19 @@ class GameConsumer(AsyncWebsocketConsumer):
                     )
                     return
 
-                game_data = await self.start_new_round(player_count)
+                print(f"🚀 Starting new round for Room {self.room_code} with {player_count} players...")
+                try:
+                    game_data = await self.start_new_round(player_count)
+                    print(f"✅ Round started successfully. Round ID: {game_data.get('round_id')}")
+                except Exception as e:
+                    print(f"❌ Error in start_new_round: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    await self.send(text_data=json.dumps({
+                        'action': 'error',
+                        'message': f'Failed to start round: {str(e)}'
+                    }))
+                    return
                 
                 # Start Timer Task
                 if self.timer_task:
@@ -333,10 +349,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         room = Room.objects.get(room_code=self.room_code)
         room.players.filter(name__startswith="Bot_").delete()
 
-    @database_sync_to_async
-    def remove_bots(self):
-        room = Room.objects.get(room_code=self.room_code)
-        room.players.filter(name__startswith="Bot_").delete()
+
 
     @database_sync_to_async
     def get_game_settings_data(self):
@@ -376,7 +389,9 @@ class GameConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def check_max_rounds(self):
         room = Room.objects.get(room_code=self.room_code)
-        return room.rounds.count() < room.max_rounds
+        current_rounds = room.rounds.count()
+        print(f"📊 Round Check: Current {current_rounds} / Max {room.max_rounds}")
+        return current_rounds < room.max_rounds
 
     @database_sync_to_async
     def get_final_scores(self):
@@ -443,6 +458,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         has_thief = any(r.is_thief for r in selected_roles)
         print(f"🎲 Starting Round with {player_count} players. Roles: {[r.name for r in selected_roles]}")
         print(f"👮 Has Police: {has_police}, 🦹 Has Thief: {has_thief}")
+        
+        if not has_police or not has_thief:
+            print("❌ CRITICAL ERROR: Missing Police or Thief in selected roles!")
+            raise Exception("Failed to assign required roles (Police/Thief)")
         
         # --- SMART SHUFFLE LOGIC ---
         # Get last round's roles to avoid immediate repeats
