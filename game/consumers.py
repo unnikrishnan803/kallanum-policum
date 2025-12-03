@@ -450,6 +450,15 @@ class GameConsumer(AsyncWebsocketConsumer):
         players = list(room.players.all())
         all_roles_qs = list(GameRole.objects.all())
         
+        # Auto-create roles if missing (First run on Render)
+        if not all_roles_qs:
+            print("⚠️ No roles found! Creating default roles...")
+            police = GameRole.objects.create(name="Police", is_police=True, win_points=100)
+            thief = GameRole.objects.create(name="Thief", is_thief=True, win_points=100)
+            civilian = GameRole.objects.create(name="Civilian", win_points=50)
+            all_roles_qs = [police, thief, civilian]
+            print("✅ Default roles created.")
+        
         # Select roles: Must have Police and Thief
         police_role = next(r for r in all_roles_qs if r.is_police)
         thief_role = next(r for r in all_roles_qs if r.is_thief)

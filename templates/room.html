@@ -316,6 +316,14 @@
             }
             else if (data.action === 'error') {
                 alert("⚠️ Error: " + data.message);
+                // Re-enable start button
+                const btn = document.querySelector('button[onclick="startGame(this)"]');
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '▶ Start Game';
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                }
             }
             else if (data.action === 'settings_data') {
                 populateSettingsModal(data.settings);
